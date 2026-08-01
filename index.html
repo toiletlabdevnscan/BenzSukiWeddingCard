@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Benz & Suki's Wedding Invitation</title>
+<style>
+  /* ตั้งค่าพื้นหลังและจัดให้อยู่กึ่งกลาง */
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    font-family: sans-serif;
+    overflow: hidden; /* ป้องกันแถบเลื่อนเวลากระดาษหมุน */
+  }
+
+  /* =========================================
+     Welcome Screen (หน้าต้อนรับ)
+     ========================================= */
+  #welcome-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('bg.png'); /* ใช้พื้นหลังเดียวกัน */
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    cursor: pointer;
+    transition: opacity 1s ease, visibility 1s ease;
+  }
+
+  #welcome-screen.fade-out {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .welcome-logo {
+    width: 250px;
+    max-width: 60vw;
+    height: auto;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
+    animation: pulse 2s infinite ease-in-out;
+  }
+
+  .welcome-hint {
+    color: #fff;
+    background: rgba(0,0,0,0.5);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  /* คอนเทนเนอร์ของการ์ด */
+  .card-wrapper {
+    position: relative;
+    width: 95vw;
+    max-width: 1000px;
+    perspective: 2500px; /* มิติความลึก 3D */
+    filter: drop-shadow(0 15px 25px rgba(0,0,0,0.3)); /* เงาของการ์ด */
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent; /* ลบกรอบสีฟ้าเวลาแตะบนมือถือ */
+    opacity: 0;
+    transition: opacity 1s ease 0.5s; /* ค่อยๆ ปรากฏขึ้นหลังจากหน้า Welcome หายไป */
+  }
+
+  .card-wrapper.show {
+    opacity: 1;
+  }
+
+  /* ใช้รูปเป็นตัวดันขนาดให้ได้สัดส่วนอัตโนมัติ */
+  .size-reference {
+    width: 100%;
+    height: auto;
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* คลาสกระดาษแต่ละแผ่น */
+  .page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: center center; /* จุดหมุนอยู่ที่กึ่งกลาง (สันการ์ด) */
+    transform-style: preserve-3d;
+    transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  /* คลาสหน้า/หลังของกระดาษแต่ละแผ่น */
+  .face {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden; /* ซ่อนตอนถูกพลิกกลับด้าน */
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  /* ด้านหลังของแผ่นกระดาษต้องถูกกลับด้านรอไว้ */
+  .face.back {
+    transform: rotateY(180deg);
+  }
+
+  /* =========================================
+     กำหนดรูปภาพให้กระดาษแต่ละแผ่น
+     ========================================= */
+  #page1 { z-index: 2; }
+  #page1 .front { background-image: url('1_2.png'); }
+  #page1 .back { background-image: url('4_2.png'); }
+
+  #page2 { z-index: 1; }
+  #page2 .front { background-image: url('2_2.png'); }
+  #page2 .back { background-image: url('5_2.png'); }
+
+  /* ตัวหนังสือบอกใบ้ด้านล่าง */
+  .hint {
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    background: rgba(0,0,0,0.5);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    pointer-events: none;
+    white-space: nowrap;
+    transition: opacity 0.3s;
+    letter-spacing: 0.5px;
+  }
+
+  /* เอฟเฟกต์แง้มปกเวลาเอาเมาส์ชี้ (เฉพาะในคอมพิวเตอร์) */
+  @media (hover: hover) {
+    .card-wrapper.state-0:hover #page1 { transform: rotateY(-5deg); }
+    .card-wrapper.state-1:hover #page2 { transform: rotateY(-5deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- หน้า Welcome Screen -->
+<div id="welcome-screen">
+  <img src="logo_final.png" class="welcome-logo" alt="Logo">
+  <div class="welcome-hint">👉 แตะที่หน้าจอเพื่อเปิดการ์ด</div>
+</div>
+
+<!-- การ์ดแต่งงาน -->
+<div class="card-wrapper state-0" id="card">
+  <img src="2_2.png" class="size-reference" alt="">
+  
+  <!-- แผ่นที่ 2 (เนื้อหา) -->
+  <div class="page" id="page2">
+    <div class="face front"></div>
+    <div class="face back"></div>
+  </div>
+
+  <!-- แผ่นที่ 1 (ปก) -->
+  <div class="page" id="page1">
+    <div class="face front"></div>
+    <div class="face back"></div>
+  </div>
+  
+  <div class="hint" id="hint-text">👉 แตะฝั่งขวาเพื่อเปิดการ์ด</div>
+</div>
+
+<script>
+  let currentState = 0; 
+  let isWelcomed = false;
+
+  const welcomeScreen = document.getElementById('welcome-screen');
+  const card = document.getElementById('card');
+  const p1 = document.getElementById('page1');
+  const p2 = document.getElementById('page2');
+  const hint = document.getElementById('hint-text');
+
+  // ฟังก์ชันสำหรับเปิดเข้าสู่หน้าการ์ด
+  function dismissWelcome() {
+    if (isWelcomed) return;
+    isWelcomed = true;
+    
+    welcomeScreen.classList.add('fade-out');
+    card.classList.add('show');
+
+    // ซ่อน welcome screen ออกจาก DOM หลังจากอนิเมชันจบ
+    setTimeout(() => {
+      welcomeScreen.style.display = 'none';
+    }, 1000);
+  }
+
+  // กดที่หน้า Welcome เพื่อเข้าสู่การ์ด
+  welcomeScreen.addEventListener('click', dismissWelcome);
+  welcomeScreen.addEventListener('touchstart', dismissWelcome);
+
+  // (ตัวเลือกเสริม) ถ้าต้องการให้ผ่านไป 3 วินาทีแล้วหายไปเองอัตโนมัติ สามารถเปิดใช้บรรทัดด้านล่างนี้ได้ครับ:
+  // setTimeout(dismissWelcome, 3000);
+
+  // ควบคุมการพลิกการ์ด
+  card.addEventListener('click', function(e) {
+    if (!isWelcomed) return;
+
+    const rect = card.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const isRightClick = clickX > rect.width / 2;
+
+    if (isRightClick) {
+      if (currentState === 0) {
+        p1.style.transform = 'rotateY(-180deg)';
+        currentState = 1;
+      } else if (currentState === 1) {
+        p2.style.zIndex = 3;
+        p2.style.transform = 'rotateY(-180deg)';
+        currentState = 2;
+      }
+    } else {
+      if (currentState === 2) {
+        p2.style.transform = 'rotateY(0deg)';
+        setTimeout(() => { p2.style.zIndex = 1; }, 600);
+        currentState = 1;
+      } else if (currentState === 1) {
+        p1.style.transform = 'rotateY(0deg)';
+        currentState = 0;
+      }
+    }
+    
+    updateUI();
+  });
+
+  function updateUI() {
+    card.className = 'card-wrapper show state-' + currentState;
+    
+    if (currentState === 0) {
+      hint.innerHTML = '👉 แตะฝั่งขวาเพื่อเปิดการ์ด';
+    } else if (currentState === 1) {
+      hint.innerHTML = '👈 แตะซ้ายกลับหน้าแรก | แตะขวาดูปกหลัง 👉';
+    } else if (currentState === 2) {
+      hint.innerHTML = '👈 แตะฝั่งซ้ายเพื่อกลับไปด้านใน';
+    }
+  }
+</script>
+
+</body>
+</html>
